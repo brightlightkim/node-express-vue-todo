@@ -15,3 +15,18 @@ let items = [];
 let id = 0;
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));
+
+app.post('/api/items', (req, res) => {
+  id = id + 1;
+  let item = {
+    id: id,
+    text: req.body.text,
+    completed: req.body.completed
+  };
+  items.push(item);
+  res.send(item);
+});
+
+app.get('/api/items', (req, res) => {
+  res.send(items);
+});
