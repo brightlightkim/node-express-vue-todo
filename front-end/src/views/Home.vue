@@ -65,6 +65,14 @@ export default {
     },
   },
   methods: {
+    async getItems() {
+      try {
+        const response = await axios.get("/api/items");
+        this.items = response.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
     async addItem() {
       try {
         await axios.post("/api/items", {
