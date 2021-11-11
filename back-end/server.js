@@ -30,3 +30,20 @@ app.post('/api/items', (req, res) => {
 app.get('/api/items', (req, res) => {
   res.send(items);
 });
+
+app.put('/api/items/:id', (req, res) => {
+  let id = parseInt(req.params.id);
+  let itemsMap = items.map(item => {
+    return item.id;
+  });
+  let index = itemsMap.indexOf(id);
+  if (index === -1) {
+    res.status(404)
+      .send("Sorry, that item doesn't exist");
+    return;
+  }
+  let item = items[index];
+  item.text = req.body.text;
+  item.completed = req.body.completed;
+  res.send(item);
+});
