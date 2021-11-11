@@ -1,99 +1,117 @@
 <template>
-<div>
-  <h1>A List of Things To Do</h1>
-  <p v-show="activeItems.length === 0">You are done with all your tasks! Good job!</p>
-  <form @submit.prevent="addItem">
-    <input type="text" v-model="text">
-    <button type="submit">Add</button>
-  </form>
-  <div class="controls">
-    <button @click="showAll()">Show All</button>
-    <button @click="showActive()">Show Active</button>
-    <button @click="showCompleted()">Show Completed</button>
-    <button @click="deleteCompleted()">Delete Completed</button>
+  <div>
+    <h1>A List of Things To Do</h1>
+    <p v-show="activeItems.length === 0">
+      You are done with all your tasks! Good job!
+    </p>
+    <form @submit.prevent="addItem">
+      <input type="text" v-model="text" />
+      <button type="submit">Add</button>
+    </form>
+    <div class="controls">
+      <button @click="showAll()">Show All</button>
+      <button @click="showActive()">Show Active</button>
+      <button @click="showCompleted()">Show Completed</button>
+      <button @click="deleteCompleted()">Delete Completed</button>
+    </div>
+    <ul>
+      <li v-for="item in filteredItems" :key="item.id">
+        <label :class="{ item: true, completed: item.completed }">
+          {{ item.text }}
+          <input
+            type="checkbox"
+            v-model="item.completed"
+            @click="completeItem(item)"
+          />
+          <span class="checkmark"></span>
+        </label>
+        <button @click="deleteItem(item)" class="delete">X</button>
+      </li>
+    </ul>
   </div>
-  <ul>
-    <li v-for="item in filteredItems" :key="item.id">
-      <label :class="{ item: true, completed: item.completed }">
-        {{ item.text }}
-        <input type="checkbox" v-model="item.completed" />
-        <span class="checkmark"></span>
-      </label>
-      <button @click="deleteItem(item)" class="delete">X</button>
-    </li>
-  </ul>
-</div>
 </template>
 
 <script>
-
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'Home',
+  name: "Home",
   data() {
     return {
-      items: [{
-        text: "make an app",
-        completed: false,
-      }, {
-        text: "declare victory",
-        completed: false,
-      }, {
-        text: "profit",
-        completed: false
-      }],
-      text: '',
-      show: 'all',
-    }
+      items: [],
+      text: "",
+      show: "all",
+    };
+  },
+  created: function () {
+    this.getItems();
   },
   computed: {
     activeItems() {
-      return this.items.filter(item => {
+      return this.items.filter((item) => {
         return !item.completed;
       });
     },
     filteredItems() {
-      if (this.show === 'active')
-        return this.items.filter(item => {
+      if (this.show === "active")
+        return this.items.filter((item) => {
           return !item.completed;
         });
-      if (this.show === 'completed')
-        return this.items.filter(item => {
+      if (this.show === "completed")
+        return this.items.filter((item) => {
           return item.completed;
         });
       return this.items;
     },
   },
   methods: {
-    addItem() {
-      this.items.push({
-        text: this.text,
-        completed: false
-      });
-      this.text = '';
+    async addItem() {
+      try {
+        await axios.post("/api/items", {
+          text: this.text,
+          completed: false,
+        });
+        this.text = "";
+        this.getItems();
+      } catch (error) {
+        console.log(error);
+      }
     },
-    deleteItem(item) {
-      var index = this.items.indexOf(item);
-      if (index > -1)
-        this.items.splice(index, 1);
+    async completeItem(item) {
+      try {
+        axios.put("/api/items/" + item.id, {
+          text: item.text,
+          completed: !item.completed,
+        });
+        this.getItems();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async deleteItem(item) {
+      try {
+        await axios.delete("/api/items/" + item.id);
+        this.getItems();
+      } catch (error) {
+        console.log(error);
+      }
     },
     showAll() {
-      this.show = 'all';
+      this.show = "all";
     },
     showActive() {
-      this.show = 'active';
+      this.show = "active";
     },
     showCompleted() {
-      this.show = 'completed';
+      this.show = "completed";
     },
     deleteCompleted() {
-      this.items = this.items.filter(item => {
-        return !item.completed;
+      this.items.forEach((item) => {
+        if (item.completed) this.deleteItem(item);
       });
     },
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
@@ -131,17 +149,17 @@ label {
 }
 
 /* Form */
-input[type=checkbox] {
+input[type="checkbox"] {
   transform: scale(1.5);
   margin-right: 10px;
 }
 
-input[type=text] {
+input[type="text"] {
   font-size: 1em;
 }
 
 button {
-  font-family: 'Arvo';
+  font-family: "Arvo";
   font-size: 1em;
 }
 
@@ -185,13 +203,13 @@ button {
 }
 
 /* On mouse-over, add a grey background color */
-.item:hover input~.checkmark {
+.item:hover input ~ .checkmark {
   background-color: #ccc;
 }
 
 /* When the checkbox is checked, add a blue background */
-.item input:checked~.checkmark {
-  background-color: #2196F3;
+.item input:checked ~ .checkmark {
+  background-color: #2196f3;
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
@@ -202,7 +220,7 @@ button {
 }
 
 /* Show the checkmark when checked */
-.item input:checked~.checkmark:after {
+.item input:checked ~ .checkmark:after {
   display: block;
 }
 
