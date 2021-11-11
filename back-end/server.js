@@ -47,3 +47,19 @@ app.put('/api/items/:id', (req, res) => {
   item.completed = req.body.completed;
   res.send(item);
 });
+
+app.delete('/api/items/:id', (req, res) => {
+  let id = parseInt(req.params.id);
+  let removeIndex = items.map(item => {
+      return item.id;
+    })
+    .indexOf(id);
+  if (removeIndex === -1) {
+    res.status(404)
+      .send("Sorry, that item doesn't exist");
+    return;
+  }
+  items.splice(removeIndex, 1);
+  res.sendStatus(200);
+});
+
